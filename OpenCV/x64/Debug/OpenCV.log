@@ -1,0 +1,8 @@
+﻿  main.cpp
+e:\projects\opencv\opencv\opencv\opencv\main.cpp(51): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+e:\projects\opencv\opencv\opencv\opencv\main.cpp(161): warning C4244: 'argument': conversion from 'double' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=int
+          ]
+  OpenCV.vcxproj -> E:\Projects\OpenCV\OpenCV\OpenCV\OpenCV\x64\Debug\OpenCV.exe
