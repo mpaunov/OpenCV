@@ -58,7 +58,7 @@ cv::RNG rng(12345);
 
 int main(int argc, char* argv[]) {
 
-	std::string settingsLocation = R"(e:\projects\opnecv_test\cppopencv\out_camera_data.xml)";
+	std::string settingsLocation = "E:\\Projects\\OpenCV\\OpenCV\\OpenCV\\OpenCV\\out_camera_data.xml";
 
 	cv::Mat cameraMatrix;
 	cv::Mat distCoeff;
@@ -79,6 +79,9 @@ int main(int argc, char* argv[]) {
 		return  -1;
 	}
 
+	//This will work fine
+	//auto substractor = cv::createBackgroundSubtractorMOG2();
+
 	while (capture.read(frame)) {
 
 
@@ -87,16 +90,18 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 
+		//cv::Mat difference;
+		//cv::Mat background = cv::imread("E:\\Projects\\OpenCV\\OpenCV\\OpenCV\\OpenCV\\img\\img.png", cv::IMREAD_COLOR);
+		//cv::absdiff(background, frame, difference);
+		//cv::imshow("Difference", difference);
+
+
 		cvtColor(frame, imageGray, CV_BGR2GRAY);
 		blur(imageGray, imageGray, cv::Size(5, 5));
 
 		cv::Mat mask;
 		threshold(imageGray, mask, 50, 255, CV_THRESH_BINARY_INV);
 		cv::Canny(mask, mask, 0, 50, 3);
-		//undistort(mask, mask, cameraMatrix, distCoeff);
-		//cv::Mat outputRvec;
-		//cv::Mat outputTvec;
-		//solvePnP(objectPoints, imagePoints, cameraMatrix, distCoeff, outputRvec, outputTvec, true, cv::SOLVEPNP_ITERATIVE);
 
 		std::vector<std::vector<cv::Point>> contours;
 		std::vector<cv::Vec4i> hierarchy;
@@ -133,6 +138,10 @@ int main(int argc, char* argv[]) {
 
 		//bottomLeft, topLeft, topRight, bottomRight.
 
+		double distancePx = cv::norm(cv::Mat(rect_points[0]) - cv::Mat(rect_points[3]));
+
+		double realDist = 86 * 3.7 / (distancePx / 189);
+
 		for (int j = 0; j < 4; j++) {
 			if (rect_points[j].x == 0) {
 				continue;
@@ -145,7 +154,7 @@ int main(int argc, char* argv[]) {
 		//Sensor physical size
 		cv::VideoCapture cap;
 
-		if (!cap.isOpened())  // check if we succeeded
+		if (!cap.isOpened()) //check if we succeeded
 			CV_Assert("Can't open Web-Cam");
 
 		double CamHeight = cap.get(CV_CAP_PROP_FRAME_HEIGHT);
@@ -157,20 +166,23 @@ int main(int argc, char* argv[]) {
 		int fontFace = cv::FONT_HERSHEY_PLAIN;
 		double fontScale = 1.5;
 		int thickness = 2;
-		cv::Point textOrg(imgW / 5, imgH / 1);
-		cv::Point textOrgTwo(imgW / 5, imgH / 2.5);
+		cv::Point textOrg(imgW / 5, imgH / 2.5);
+		cv::Point textOrgTwo(imgW / 5, imgH);
+		cv::Point tectDist(imgW / 5, imgH / 0.5);
 
 		std::string someText;
 
 		someText = cv::format("Height: %.2f mm", minRect[0].size.width - minRect[0].size.width * 0.28);
-		putText(frame, someText, textOrgTwo, fontFace, fontScale, cv::Scalar::all(255), thickness, 8);
-		someText = cv::format("Width: %.2f mm", minRect[0].size.height - minRect[0].size.height * 0.28);
 		putText(frame, someText, textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, 8);
+		someText = cv::format("Width: %.2f mm", minRect[0].size.height - minRect[0].size.height * 0.28);
+		putText(frame, someText, textOrgTwo, fontFace, fontScale, cv::Scalar::all(255), thickness, 8);
+		someText = cv::format("Distance: %.2f mm", realDist);
+		putText(frame, someText, tectDist, fontFace, fontScale, cv::Scalar::all(255), thickness, 8);
 		imshow("Object Measurement", frame);
 
 		//cv::imshow("Output", mask);
-		std::string store(R"("E:\Projects\OpenCV\OpenCV\imgOutput\img.jpeg")");
-		cv::imwrite(store, frame);
+		//std::string store("E:\\Projects\\OpenCV\\OpenCV\\OpenCV\\OpenCV\\img\\img.png");
+		//cv::imwrite(store, frame);
 
 		const auto c = cvWaitKey(10);  //delay in milliseconds
 		if (static_cast<char>(c) > 0) {
